@@ -25,6 +25,7 @@ struct Boundaries
 end
 
 struct Params
+    delta::Float64
     #LX,LZ: number of grid points in x and z direction (note: boundaries are at points with indices 2, lx-1,lz-1)
     lx::Int32
     lz::Int32
@@ -39,6 +40,13 @@ struct Params
     dx::Float64 # 0.12;//[dx]=km
     nsig::Int32 #2; //NSIG: number of exrema
     nmax::Int32 #16000; ?
+end
+
+function vmax()
+end
+
+function deltat(p)
+    p.dx/sqrt(2.0)/vmax()
 end
 
 # Einganspuls (Kuepperwavelet)
@@ -66,7 +74,17 @@ function timeloop(p::Params, bd::Boundarydisplacements, d::Displacementfield)
 end
 
 function setinitialcondtions(field::Displacementfield, p::Params)
-    
+    if p.iquell == 2
+        for j in 2:p.lz-1
+            arg = -abs(p.nqz)/p.nqz*(j-p.nqz)*p.dx/p.vp
+            s1 = signal(arg-deltat(p), p.delta, p.nsig)
+            s2 = signal(arg, p.delta, p.nsig)
+            for i in 1:p.lx)
+                field.v[i][j][1] = s1
+                field.v[i][j][2] = s2
+            end
+        end
+    end
 end
 
 function saveboundarydisplacements!(p::Params, bd::Boundarydisplacements, d::Displacementfield)
